@@ -95,7 +95,7 @@ Results from practice questions and exams are collected under the original quest
 <details>
 <summary><strong>Exams and printing: generate exams from your mistakes and record results per question</strong></summary>
 
-Generated exams keep each source question's ID and show every attempt, so you can trace the effect back to the original question.
+Generated exams keep each source question's ID and show every attempt, so you can trace the effect back to the original question. You can also answer online right on the exam page: fill in each answer, submit, and let AI grade against the answer key with a score summary; graded results count toward each source question's review history just like entered results.
 
 ![An English demo exam with source IDs and sample results from multiple attempts](doc/screenshots/en/exam.png)
 

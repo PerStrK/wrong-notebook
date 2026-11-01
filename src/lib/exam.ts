@@ -6,6 +6,7 @@ import { createLogger } from "@/lib/logger";
 import { getMasteryThreshold } from "@/lib/mastery";
 import { DEFAULT_MASTERY_THRESHOLD, masteryStatusWhere } from "@/lib/mastery-status";
 import { startBackgroundTask, trackBackgroundTask } from "@/lib/background-tasks";
+import { consumeAiQuota } from "@/lib/ai-quota";
 import { resolveNotebookScope, SUBJECT_DISPLAY_NAMES } from "@/lib/notebook-scope";
 import type { BackgroundTaskHandle } from "@/lib/background-tasks";
 
@@ -319,6 +320,10 @@ async function refreshPaperStatus(paperId: string): Promise<void> {
 export interface ExamResultInput {
     questionId: string;
     result: 'correct' | 'wrong' | 'not_attempted' | null;
+    /** 在线作答时学生提交的答案原文快照；自评录入不传，保持为空 */
+    studentAnswer?: string | null;
+    /** 在线作答时的批改说明（AI 批语或兜底比对说明）；自评录入不传 */
+    gradingFeedback?: string | null;
 }
 
 /**
@@ -352,7 +357,7 @@ export async function recordExamResults(paperId: string, userId: string, takenAt
     const affected = new Set<string>();
 
     await prisma.$transaction(async (tx) => {
-        for (const { questionId, result } of results) {
+        for (const { questionId, result, studentAnswer, gradingFeedback } of results) {
             const question = questionMap.get(questionId);
             // 原题已删除的题目无法计入举一反三记录
             if (!question?.errorItemId || result === null) continue;
@@ -372,6 +377,8 @@ export async function recordExamResults(paperId: string, userId: string, takenAt
                     answerText: question.answerText,
                     analysis: question.analysis,
                     figureSvg: question.figureSvg,
+                    wrongAnswerText: studentAnswer?.trim() ? studentAnswer : null,
+                    mistakeAnalysis: gradingFeedback ?? null,
                 },
             });
             affected.add(question.errorItemId);
@@ -382,4 +389,138 @@ export async function recordExamResults(paperId: string, userId: string, takenAt
     });
 
     return [...affected];
+}
+
+/** AI 批改不可用（调用失败或额度用尽）时的兜底说明，按界面语言给出 */
+const FALLBACK_GRADING_FEEDBACK = {
+    zh: "AI 批改暂不可用，已按与标准答案归一化比对（忽略大小写、空白与常见标点）判定",
+    en: "AI grading was unavailable; judged by normalized comparison with the correct answer (ignoring case, whitespace and common punctuation)",
+} as const;
+
+/** 归一化答案文本用于兜底比对：去全部空白、转小写、去掉常见中英文标点（保留数学符号与字母数字） */
+export function normalizeAnswerForCompare(text: string): string {
+    return text
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "")
+        .replace(/[，。、；：？！·…—「」『』“”‘’（）【】《》,. ;:?!'"()\[\]]/g, "");
+}
+
+/** 兜底比对：学生答案与标准答案归一化后全等才算对；任一侧归一化后为空不判对 */
+export function answersMatchForFallback(studentAnswer: string, standardAnswer: string): boolean {
+    const student = normalizeAnswerForCompare(studentAnswer);
+    const standard = normalizeAnswerForCompare(standardAnswer);
+    return student.length > 0 && standard.length > 0 && student === standard;
+}
+
+export interface ExamAnswerInput {
+    questionId: string;
+    answer: string;
+}
+
+export interface ExamGradedResult {
+    questionId: string;
+    result: 'correct' | 'wrong' | 'not_attempted';
+    /** AI 批语或兜底比对说明；未答时为空字符串 */
+    feedback: string;
+    correctAnswer: string;
+}
+
+export interface ExamSubmitOutcome {
+    results: ExamGradedResult[];
+    /** 未参与批改的题目（未生成完成或缺少标准答案） */
+    skipped: string[];
+    score: { total: number; answered: number; correct: number; rate: number };
+    /** 需要重新评估掌握概率的原题 ID */
+    affected: string[];
+}
+
+/**
+ * 在线作答批改：逐题顺序调用 AI 对照标准答案判分（免费渠道慢，禁止并发），
+ * 答案为空记未答；AI 调用失败或额度用尽时改用归一化全等比对兜底。
+ * 批改结果经 recordExamResults 落库，与自评录入完全一致的写库与副作用。
+ */
+export async function submitExamAnswers(
+    paperId: string,
+    user: { id: string; role?: string | null },
+    answers: ExamAnswerInput[],
+    language?: 'zh' | 'en',
+): Promise<ExamSubmitOutcome> {
+    const paper = await prisma.examPaper.findUnique({
+        where: { id: paperId },
+        select: {
+            userId: true,
+            questions: {
+                orderBy: { order: 'asc' },
+                select: { id: true, status: true, questionText: true, answerText: true, analysis: true },
+            },
+        },
+    });
+    if (!paper || paper.userId !== user.id) {
+        throw new Error('EXAM_NOT_FOUND');
+    }
+
+    const answerByQuestion = new Map(answers.map(({ questionId, answer }) => [questionId, answer]));
+    const gradable = paper.questions.filter((question) => question.status === 'ready' && question.questionText?.trim() && question.answerText?.trim());
+    const gradableIds = new Set(gradable.map((question) => question.id));
+    const skipped = paper.questions.filter((question) => !gradableIds.has(question.id)).map((question) => question.id);
+
+    const results: ExamGradedResult[] = [];
+    const recordInputs: ExamResultInput[] = [];
+    let answered = 0;
+    let correct = 0;
+    // 额度用尽后不再调用 AI，后续题目全部走兜底比对
+    let quotaExhausted = false;
+
+    for (const question of gradable) {
+        const studentAnswer = (answerByQuestion.get(question.id) ?? '').trim();
+        const correctAnswer = question.answerText!;
+        if (!studentAnswer) {
+            results.push({ questionId: question.id, result: 'not_attempted', feedback: '', correctAnswer });
+            recordInputs.push({ questionId: question.id, result: 'not_attempted', studentAnswer: null, gradingFeedback: null });
+            continue;
+        }
+        answered += 1;
+
+        let result: 'correct' | 'wrong' | null = null;
+        let feedback = '';
+        if (!quotaExhausted) {
+            const limited = await consumeAiQuota(user, 'exam');
+            if (limited) {
+                quotaExhausted = true;
+                logger.info({ userId: user.id, paperId }, 'Exam grading quota exhausted, switching to fallback comparison');
+            }
+        }
+        if (!quotaExhausted) {
+            try {
+                const graded = await getAIService().gradeAnswer({
+                    questionText: question.questionText!,
+                    answerText: correctAnswer,
+                    analysis: question.analysis,
+                    userAnswer: studentAnswer,
+                    language,
+                });
+                result = graded.correct ? 'correct' : 'wrong';
+                feedback = graded.reason;
+            } catch (error) {
+                logger.warn({ error, paperId, questionId: question.id }, 'Exam grading AI failed, using fallback comparison');
+            }
+        }
+        if (result === null) {
+            result = answersMatchForFallback(studentAnswer, correctAnswer) ? 'correct' : 'wrong';
+            feedback = FALLBACK_GRADING_FEEDBACK[language === 'en' ? 'en' : 'zh'];
+        }
+        if (result === 'correct') correct += 1;
+        results.push({ questionId: question.id, result, feedback, correctAnswer });
+        recordInputs.push({ questionId: question.id, result, studentAnswer, gradingFeedback: feedback || null });
+    }
+
+    const affected = await recordExamResults(paperId, user.id, new Date(), recordInputs);
+    const total = gradable.length;
+    return {
+        results,
+        skipped,
+        score: { total, answered, correct, rate: total > 0 ? Math.round((correct / total) * 100) / 100 : 0 },
+        affected,
+    };
 }

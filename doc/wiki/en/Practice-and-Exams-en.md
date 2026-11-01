@@ -42,7 +42,7 @@ The **Review** page in the navigation lists questions due today, and the home pa
 1. Open the exam entry and choose the scope: notebooks, knowledge points, mastery and so on.
 2. The system picks questions from that scope (by default **Least practiced first**: questions with fewer practice records come first; for ties, questions that have never appeared in an existing exam paper come first, then random; **Fully random** is also available) and generates a variant for each.
 3. Check the progress in background tasks; when it finishes, open the paper and check the questions, figures and answers.
-4. Print or export it, and afterwards record the result for each question.
+4. Print or export it, and afterwards record the result for each question. Or choose "Answer Online" to type each answer on the page and submit: the AI grades every answer against the answer key and shows a score (correct count and rate); blank answers count as not attempted, and graded results count toward each source question's review history just like recorded results.
 
 In the exam list a paper shows Generating, then Generated (or Partly failed / Failed), and Completed once results have been entered.
 

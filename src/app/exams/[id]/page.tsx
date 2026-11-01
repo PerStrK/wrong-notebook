@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTimeZone } from "@/contexts/TimeZoneContext";
 import { answeredDateToISOString, formatDateTime } from "@/lib/date-time";
-import { ClipboardCheck, Loader2, Printer, RotateCcw, Save, Trash2 } from "lucide-react";
+import { Check, ClipboardCheck, Loader2, PenLine, Printer, RotateCcw, Save, Send, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BackButton } from "@/components/ui/back-button";
@@ -17,7 +17,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTitle } from "@/lib/page-title";
 import { apiClient } from "@/lib/api-client";
 import type { FigureAlign } from "@/lib/figure-scale";
-import type { ExamPaperDetail, PracticeResult } from "@/types/api";
+import type { ExamPaperDetail, ExamSubmitResponse, PracticeResult } from "@/types/api";
 import { confirmDialog } from "@/lib/feedback";
 
 const POLL_INTERVAL_MS = 3000;
@@ -36,6 +36,8 @@ export default function ExamDetailPage() {
     const [takenAt, setTakenAt] = useState(formatDateTime(new Date(), "yyyy-MM-dd", timeZone));
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
+    // 在线作答模式：answers 为各题当前输入，outcome 为最近一次交卷的批改结果；null 表示未在在线作答
+    const [online, setOnline] = useState<{ answers: Record<string, string>; submitting: boolean; outcome: ExamSubmitResponse | null } | null>(null);
     const [uniformPreview, setUniformPreview] = useState<{ scale: number | null; align: FigureAlign | null }>({ scale: null, align: null });
 
     const load = useCallback(async () => {
@@ -65,6 +67,9 @@ export default function ExamDetailPage() {
     const recorded = paper.questions.some((question) => question.attempts.length > 0);
     const hasFailed = paper.questions.some((question) => question.status === "failed");
     const recordable = paper.questions.filter((question) => question.status === "ready" && question.errorItemId);
+    const gradable = paper.questions.filter((question) => question.status === "ready" && question.questionText?.trim() && question.answerText?.trim());
+    const gradableIds = new Set(gradable.map((question) => question.id));
+    const onlineAnswered = online ? gradable.filter((question) => (online.answers[question.id] ?? "").trim()).length : 0;
     const figureQuestions = paper.questions.filter((question) => question.status === "ready" && Boolean(question.figureSvg));
 
     const selectedCount = draft ? recordable.filter((question) => draft[question.id]).length : 0;
@@ -94,6 +99,31 @@ export default function ExamDetailPage() {
             setMessage(t.exam.resultsSaveFailed);
         } finally {
             setSaving(false);
+        }
+    };
+
+    // 在线作答与自评录入互斥，每次进入都从空白开始
+    const startOnline = () => {
+        setMessage(null);
+        setOnline({ answers: {}, submitting: false, outcome: null });
+    };
+
+    const submitOnline = async () => {
+        if (!online || online.submitting) return;
+        const unanswered = gradable.length - onlineAnswered;
+        if (unanswered > 0 && !(await confirmDialog(t.exam.unansweredConfirm.replace("{count}", String(unanswered))))) return;
+        setOnline((prev) => (prev ? { ...prev, submitting: true } : prev));
+        try {
+            // 整卷逐题批改耗时较长：放宽超时并允许断线后取回结果
+            const outcome = await apiClient.post<ExamSubmitResponse>(`/api/exams/${paper.id}/submit-answers`, {
+                answers: gradable.map((question) => ({ questionId: question.id, answer: online.answers[question.id] ?? "" })),
+                language,
+            }, { recoverable: true, timeout: 600000 });
+            setOnline((prev) => (prev ? { answers: prev.answers, submitting: false, outcome } : prev));
+            await load();
+        } catch {
+            setOnline((prev) => (prev ? { ...prev, submitting: false } : prev));
+            setMessage(t.exam.submitFailed);
         }
     };
 
@@ -156,10 +186,16 @@ export default function ExamDetailPage() {
                             {t.exam.print}
                         </Button>
                     </Link>
-                    {!draft && recordable.length > 0 && (
+                    {!draft && !online && recordable.length > 0 && (
                         <Button size="sm" onClick={startRecording}>
                             <ClipboardCheck className="mr-2 h-4 w-4" />
                             {t.exam.recordResults}
+                        </Button>
+                    )}
+                    {!draft && !online && gradable.length > 0 && (
+                        <Button size="sm" variant="outline" onClick={startOnline}>
+                            <PenLine className="mr-2 h-4 w-4" />
+                            {t.exam.onlineAnswer}
                         </Button>
                     )}
                     {hasFailed && paper.status !== "generating" && (
@@ -180,6 +216,20 @@ export default function ExamDetailPage() {
                     </p>
                 )}
                 {message && <p className="rounded-md border p-3 text-sm">{message}</p>}
+
+                {online && !online.outcome && (
+                    <p className="rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-3 text-sm text-blue-800 dark:text-blue-200">
+                        {t.exam.onlineHint}
+                    </p>
+                )}
+                {online?.outcome && (
+                    <p className="rounded-md border bg-muted/30 p-3 text-sm font-medium">
+                        {t.exam.scoreSummary
+                            .replace("{correct}", String(online.outcome.score.correct))
+                            .replace("{total}", String(online.outcome.score.total))
+                            .replace("{rate}", String(Math.round(online.outcome.score.rate * 100)))}
+                    </p>
+                )}
 
                 {draft && (
                     <div className="space-y-2 rounded-md border bg-muted/30 p-3">
@@ -209,7 +259,13 @@ export default function ExamDetailPage() {
                             editingResult={draft ? draft[question.id] ?? null : undefined}
                             onResultChange={(result) => setDraft((prev) => (prev ? { ...prev, [question.id]: result } : prev))}
                             onDeleteAttempt={deleteAttempt}
-                            onRegenerated={load}
+                            onRegenerated={online ? undefined : load}
+                            onlineAnswer={online && gradableIds.has(question.id) ? {
+                                value: online.answers[question.id] ?? "",
+                                disabled: online.submitting || online.outcome !== null,
+                                onChange: (value: string) => setOnline((prev) => (prev ? { ...prev, answers: { ...prev.answers, [question.id]: value } } : prev)),
+                            } : undefined}
+                            onlineResult={online?.outcome?.results.find((result) => result.questionId === question.id)}
                             previewFigureScale={uniformPreview.scale}
                             previewFigureAlign={uniformPreview.align}
                             onSaveFigureScale={saveQuestionFigureScale}
@@ -226,6 +282,39 @@ export default function ExamDetailPage() {
                                 {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                                 {t.exam.saveResults}
                             </Button>
+                        </div>
+                    </div>
+                )}
+
+                {online && (
+                    <div className="fixed inset-x-0 bottom-16 z-30 border-t bg-background/95 p-3 backdrop-blur md:bottom-0">
+                        <div className="max-w-4xl mx-auto flex items-center justify-end gap-2">
+                            {!online.outcome ? (
+                                <>
+                                    <span className="mr-auto flex items-center gap-2 text-xs text-muted-foreground">
+                                        {online.submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                                        {online.submitting
+                                            ? t.exam.gradingInProgress
+                                            : t.exam.answeredProgress.replace("{answered}", String(onlineAnswered)).replace("{total}", String(gradable.length))}
+                                    </span>
+                                    <Button variant="outline" onClick={() => setOnline(null)} disabled={online.submitting}>{t.exam.cancel}</Button>
+                                    <Button onClick={submitOnline} disabled={online.submitting}>
+                                        {online.submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                                        {t.exam.submitAnswers}
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <Button variant="outline" onClick={startOnline}>
+                                        <RotateCcw className="mr-2 h-4 w-4" />
+                                        {t.exam.redoOnline}
+                                    </Button>
+                                    <Button onClick={() => setOnline(null)}>
+                                        <Check className="mr-2 h-4 w-4" />
+                                        {t.exam.finishOnline}
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}

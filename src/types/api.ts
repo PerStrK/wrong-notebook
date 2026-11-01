@@ -412,3 +412,28 @@ export interface ExamPaperDetail {
     createdAt: string;
     questions: ExamQuestionDetail[];
 }
+
+/** 在线作答交卷后单题的批改结果 */
+export interface ExamSubmitResultItem {
+    questionId: string;
+    result: PracticeResult;
+    /** AI 批语或兜底比对说明；未答时为空字符串 */
+    feedback: string;
+    correctAnswer: string;
+}
+
+/** 在线作答交卷接口的响应 */
+export interface ExamSubmitResponse {
+    results: ExamSubmitResultItem[];
+    /** 未参与批改的题目 ID（未生成完成或缺少标准答案） */
+    skipped: string[];
+    score: {
+        /** 参与批改的题目数 */
+        total: number;
+        /** 实际作答（非空）的题目数 */
+        answered: number;
+        correct: number;
+        /** 得分率，0~1 */
+        rate: number;
+    };
+}

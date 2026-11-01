@@ -6,6 +6,7 @@ import { useTimeZone } from "@/contexts/TimeZoneContext";
 import { formatDateTime } from "@/lib/date-time";
 import { ChevronDown, ChevronUp, Loader2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { RESULT_BADGE_CLASS } from "@/components/mastery-panel";
@@ -33,6 +34,17 @@ interface ExamQuestionCardProps {
     previewFigureAlign?: FigureAlign | null;
     /** 单题保存配图显示与打印比例、位置 */
     onSaveFigureScale?: (questionId: string, figureScale: number, figureAlign: FigureAlign) => Promise<void>;
+    /** 在线作答模式下本题的答题框状态；undefined 表示非在线作答模式 */
+    onlineAnswer?: {
+        value: string;
+        disabled: boolean;
+        onChange: (value: string) => void;
+    };
+    /** 在线作答批改后本题的结果展示；undefined 表示尚未批改 */
+    onlineResult?: {
+        result: PracticeResult;
+        feedback: string;
+    };
 }
 
 export function ExamQuestionCard({
@@ -45,6 +57,8 @@ export function ExamQuestionCard({
     previewFigureScale,
     previewFigureAlign,
     onSaveFigureScale,
+    onlineAnswer,
+    onlineResult,
 }: ExamQuestionCardProps) {
     const { t } = useLanguage();
     const { timeZone } = useTimeZone();
@@ -146,6 +160,42 @@ export function ExamQuestionCard({
 
                 {!isEditing && onRegenerated && (
                     <ExamQuestionRegenerate paperId={paperId} question={question} onDone={onRegenerated} />
+                )}
+
+                {onlineAnswer && question.status === "ready" && (
+                    <div className="space-y-1">
+                        <label htmlFor={`online-answer-${question.id}`} className="text-xs font-medium text-muted-foreground">
+                            {t.exam.yourAnswerLabel}
+                        </label>
+                        <Textarea
+                            id={`online-answer-${question.id}`}
+                            rows={2}
+                            value={onlineAnswer.value}
+                            disabled={onlineAnswer.disabled}
+                            placeholder={t.exam.answerPlaceholder}
+                            onChange={(e) => onlineAnswer.onChange(e.target.value)}
+                        />
+                    </div>
+                )}
+
+                {onlineResult && (
+                    <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+                        <Badge variant="outline" className={`font-normal ${RESULT_BADGE_CLASS[onlineResult.result] || ""}`}>
+                            {t.mastery.results[onlineResult.result]}
+                        </Badge>
+                        {question.answerText && (
+                            <div className="space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground">{t.exam.correctAnswerLabel}</p>
+                                <MarkdownRenderer content={question.answerText} className="font-semibold" />
+                            </div>
+                        )}
+                        {onlineResult.feedback && (
+                            <p className="text-sm text-muted-foreground">
+                                <span className="font-medium text-foreground">{t.exam.aiFeedbackLabel}{t.common.colon}</span>
+                                {onlineResult.feedback}
+                            </p>
+                        )}
+                    </div>
                 )}
 
                 {isEditing && question.status === "ready" && question.errorItemId && onResultChange && (

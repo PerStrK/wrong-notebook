@@ -327,6 +327,10 @@ export const translations = {
             noMistakeAnalysis: "No mistake analysis yet.",
             close: "Close",
             clickOutside: "Click outside to close",
+            prevQuestion: "Previous",
+            nextQuestion: "Next",
+            queuePosition: "Question {current} of {total}",
+            finishReview: "Finish Review",
         },
         practice: {
             title: "Smart Practice",
@@ -1727,6 +1731,10 @@ export const translations = {
             noMistakeAnalysis: "暂无错因分析",
             close: "✕ 关闭",
             clickOutside: "点击图片外部区域关闭",
+            prevQuestion: "上一题",
+            nextQuestion: "下一题",
+            queuePosition: "第 {current} 题 / 共 {total} 题",
+            finishReview: "完成复习",
         },
         practice: {
             title: "智能练习",

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, FileQuestion, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, FileQuestion, RefreshCw, Trash2 } from "lucide-react";
 import { DifficultyStars } from "@/components/difficulty-stars";
 import { GeogebraSection } from "@/components/error-detail/geogebra-section";
 import { ImageViewer } from "@/components/error-detail/image-viewer";
@@ -26,6 +26,7 @@ import { apiClient } from "@/lib/api-client";
 import { confirmDialog, toast } from "@/lib/feedback";
 import { frontendLogger } from "@/lib/frontend-logger";
 import { usePageTitle } from "@/lib/page-title";
+import { useDueNeighbors } from "@/lib/use-due-neighbors";
 import type { ErrorItemDetail } from "@/components/error-detail/types";
 import type { MasteryStatus } from "@/lib/mastery-status";
 import type { UserProfile } from "@/types/api";
@@ -47,6 +48,8 @@ export default function ErrorDetailPage() {
     const [svgAnimationEnabled, setSvgAnimationEnabled] = useState(true);
     // 复习状态由举一反三记录和掌握概率决定，随掌握面板的数据更新
     const [masteryStatus, setMasteryStatus] = useState<MasteryStatus | null>(null);
+    // 当前题在到期复习队列中的相邻题目；不在队列（或拉取失败）时为空，页面不显示翻题导航
+    const { neighbors: dueNeighbors } = useDueNeighbors(item?.id ?? null);
     const [savingDifficulty, setSavingDifficulty] = useState(false);
 
     const fetchItem = useCallback(async (id: string) => {
@@ -226,6 +229,44 @@ export default function ErrorDetailPage() {
 
                     <NotesCard item={item} onUpdate={updateItem} />
                 </div>
+
+                {dueNeighbors && (
+                    <nav className="flex items-center justify-between gap-3 border-t pt-5">
+                        {dueNeighbors.prevId ? (
+                            <Link href={`/error-items/${dueNeighbors.prevId}`}>
+                                <Button variant="outline">
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    {t.detail.prevQuestion}
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Button variant="outline" disabled>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                {t.detail.prevQuestion}
+                            </Button>
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                            {t.detail.queuePosition
+                                .replace("{current}", String(dueNeighbors.index + 1))
+                                .replace("{total}", String(dueNeighbors.total))}
+                        </span>
+                        {dueNeighbors.nextId ? (
+                            <Link href={`/error-items/${dueNeighbors.nextId}`}>
+                                <Button>
+                                    {t.detail.nextQuestion}
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Link href="/review">
+                                <Button>
+                                    <Check className="mr-2 h-4 w-4" />
+                                    {t.detail.finishReview}
+                                </Button>
+                            </Link>
+                        )}
+                    </nav>
+                )}
             </div>
 
             <ImageViewer src={viewerImageUrl} onClose={() => setViewerImageUrl(null)} />

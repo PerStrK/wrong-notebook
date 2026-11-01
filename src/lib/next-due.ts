@@ -19,3 +19,32 @@ export function pickNextDueId(orderedDueIds: readonly string[], currentId: strin
     }
     return null;
 }
+
+/** 错题在到期队列中的位置与相邻题目（详情页连贯翻题用） */
+export interface DueNeighbors {
+    /** 上一题 id；当前题是首题时为 null */
+    prevId: string | null;
+    /** 下一题 id；当前题是末题时为 null */
+    nextId: string | null;
+    /** 当前题在队列中的下标（从 0 开始） */
+    index: number;
+    /** 队列总题数 */
+    total: number;
+}
+
+/**
+ * 计算当前题在到期队列中的上一题/下一题与位置。
+ * 队列顺序与 pickNextDueId 相同（nextReviewAt 从早到晚）；不在队列中返回 null。
+ */
+export function pickDueNeighbors(orderedDueIds: readonly string[], currentId: string): DueNeighbors | null {
+    const index = orderedDueIds.indexOf(currentId);
+    if (index < 0) {
+        return null;
+    }
+    return {
+        prevId: index > 0 ? orderedDueIds[index - 1] : null,
+        nextId: index + 1 < orderedDueIds.length ? orderedDueIds[index + 1] : null,
+        index,
+        total: orderedDueIds.length,
+    };
+}

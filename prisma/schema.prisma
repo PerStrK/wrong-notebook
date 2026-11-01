@@ -41,6 +41,7 @@ model User {
   examPapers ExamPaper[]
   aiUsages   AiUsage[]
   paperGroups PaperGroup[]
+  analysisTasks AnalysisTask[]
 }
 
 // 统一知识点标签表 (支持无限层级)
@@ -263,6 +264,30 @@ model ExamQuestion {
   practiceRecords PracticeRecord[]
 
   @@index([paperId, order])
+}
+
+// 拍照识别后台任务：图片先入队，由进程内队列逐个识别并自动建错题。
+// 属瞬态队列状态（识别产物是 ErrorItem），不纳入数据备份导出。
+model AnalysisTask {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status       String   @default("queued") // queued | processing | done | failed | cancelled
+  imagePath    String   // 任务图片路径（相对数据目录），识别成功建题后删除文件
+  mimeType     String   @default("image/jpeg")
+  notebookId   String?  // 上传时指定的错题本 id，未指定时按识别学科自动匹配/新建
+  subjectHint  String?  // 指定错题本的名称快照，供任务列表展示
+  language     String   @default("zh") // 识别时使用的界面语言
+  errorItemId  String?  // 识别成功后创建（或命中的重复题）的错题 id
+  resultSubject String? // 识别出的学科名
+  resultSummary String? // 识别出的题干摘要
+  errorMessage String?  // 失败原因（AI 错误码或简短信息）
+  createdAt    DateTime @default(now())
+  startedAt    DateTime?
+  finishedAt   DateTime?
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 // 用户发起的 AI 调用记录，用于每日额度和用量统计（不含后台自动的掌握概率评估）

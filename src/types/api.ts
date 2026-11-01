@@ -422,6 +422,31 @@ export interface ExamSubmitResultItem {
     correctAnswer: string;
 }
 
+/** 后台识别任务状态 */
+export type AnalysisTaskStatus = 'queued' | 'processing' | 'done' | 'failed' | 'cancelled';
+
+/** 后台识别任务（列表与创建接口返回，不含图片存储路径） */
+export interface AnalysisTaskItem {
+    id: string;
+    status: AnalysisTaskStatus;
+    /** 上传时指定的错题本 id，未指定时为 null */
+    notebookId: string | null;
+    /** 指定错题本的名称快照 */
+    subjectHint: string | null;
+    language: 'zh' | 'en';
+    /** 识别成功后创建（或命中的重复题）的错题 id */
+    errorItemId: string | null;
+    /** 识别出的学科名 */
+    resultSubject: string | null;
+    /** 识别出的题干摘要 */
+    resultSummary: string | null;
+    /** 失败原因（AI 错误码或简短信息） */
+    errorMessage: string | null;
+    createdAt: string;
+    startedAt: string | null;
+    finishedAt: string | null;
+}
+
 /** 在线作答交卷接口的响应 */
 export interface ExamSubmitResponse {
     results: ExamSubmitResultItem[];

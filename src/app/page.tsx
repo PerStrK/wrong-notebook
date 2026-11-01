@@ -3,7 +3,7 @@
 import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Camera, PenLine, Sparkles } from "lucide-react";
-import { BatchImportPanel } from "@/components/batch-import-panel";
+import { AnalysisTaskPanel } from "@/components/analysis-task-panel";
 import { CorrectionEditor } from "@/components/correction-editor";
 import { DirectTextEditor } from "@/components/direct-text-editor";
 import { HomeHero } from "@/components/home-hero";
@@ -15,7 +15,9 @@ import { PageLoading } from "@/components/ui/page-loading";
 import { ProgressFeedback } from "@/components/ui/progress-feedback";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { enqueueAnalysisImage } from "@/lib/analysis-queue-client";
 import { apiClient } from "@/lib/api-client";
+import { toast } from "@/lib/feedback";
 import { frontendLogger } from "@/lib/frontend-logger";
 import { usePageTitle } from "@/lib/page-title";
 import { useQuestionImport } from "@/lib/use-question-import";
@@ -36,7 +38,7 @@ interface DirectEntry {
 }
 
 function HomeContent() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     usePageTitle(t.pageTitle.home);
     const searchParams = useSearchParams();
     const initialNotebookId = searchParams.get("notebook");
@@ -70,6 +72,26 @@ function HomeContent() {
             .then(data => setDueCount(data.total))
             .catch(err => frontendLogger.error('[Home]', 'Failed to fetch due reviews', { error: err }));
     }, []);
+
+    // 拍照识别改为后台队列：裁剪后的图片逐张入队即可，不等待识别结果
+    const [queueRefreshKey, setQueueRefreshKey] = useState(0);
+    const enqueueBlobs = async (blobs: Blob[]) => {
+        let failed = 0;
+        for (const blob of blobs) {
+            try {
+                await enqueueAnalysisImage(blob, { notebookId: initialNotebookId, language });
+            } catch (error) {
+                failed++;
+                frontendLogger.error('[Home]', 'Failed to enqueue analysis task', { error });
+            }
+        }
+        if (failed === 0) {
+            toast.success(t.analysisQueue.enqueued);
+        } else {
+            toast.error(t.analysisQueue.enqueueFailed);
+        }
+        setQueueRefreshKey((key) => key + 1);
+    };
 
     const handleDirectSave = async (data: DirectEntry): Promise<void> => {
         flow.setAnalysisStep('saving');
@@ -111,15 +133,15 @@ function HomeContent() {
                                 <ImportResultBanner imported={flow.lastImported} onDismiss={flow.dismissImported} />
                             )}
 
-                            {flow.batchBlobs ? (
-                                <BatchImportPanel
-                                    blobs={flow.batchBlobs}
-                                    subjectId={initialNotebookId}
-                                    timeout={flow.aiTimeout}
-                                    onClose={flow.closeBatch}
-                                />
-                            ) : inputMode === "image" ? (
-                                <UploadZone onImageSelect={flow.selectImage} isAnalyzing={flow.isBusy} />
+                            {inputMode === "image" ? (
+                                <>
+                                    <UploadZone onImageSelect={flow.selectImage} isAnalyzing={flow.isBusy} />
+                                    <AnalysisTaskPanel
+                                        notebookId={initialNotebookId}
+                                        refreshKey={queueRefreshKey}
+                                        onEnqueued={() => setQueueRefreshKey((key) => key + 1)}
+                                    />
+                                </>
                             ) : inputMode === "text" ? (
                                 <TextInputZone
                                     onSubmit={flow.submitText}
@@ -143,8 +165,14 @@ function HomeContent() {
                         imageSrc={flow.croppingImage}
                         open={flow.isCropperOpen}
                         onClose={flow.closeCropper}
-                        onCropComplete={flow.cropComplete}
-                        onMultiCropComplete={flow.startBatch}
+                        onCropComplete={(blob) => {
+                            flow.closeCropper();
+                            void enqueueBlobs([blob]);
+                        }}
+                        onMultiCropComplete={(blobs) => {
+                            flow.closeCropper();
+                            void enqueueBlobs(blobs);
+                        }}
                     />
                 )}
 

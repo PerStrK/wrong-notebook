@@ -22,6 +22,8 @@ Images can be cropped first. While cropping or selecting several questions, zoom
 
 After enabling "Review before import" in "Settings → General", you can correct the recognition on the review page before saving. The AI may misread numbers, symbols and figure relationships, so check against the original before saving.
 
+Photo uploads on the home page use the background recognition queue: submitting an image enqueues it and returns immediately, so you can keep uploading more photos without waiting on the page. Recognition runs one task at a time in the background with no time limit, and finished questions are added to your notebooks automatically (the notebook you came from, or matched/created by the recognized subject). The "Tasks" page in the navigation shows each task's progress (queued, recognizing, done, failed, cancelled); queued and running tasks can be cancelled (a cancelled running task discards its result and creates nothing), and failed or cancelled tasks can be recognized again. After a service restart, unfinished tasks are re-queued automatically. Note that the background queue saves results automatically and does not go through the "Review before import" check page.
+
 ## Duplicate detection
 
 On import, the question text is compared with the current user's existing questions across all notebooks. The default threshold is 90% and can be changed in your general settings.

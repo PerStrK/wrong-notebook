@@ -25,6 +25,7 @@ export default function NotebooksPage() {
     const { t } = useLanguage(); // Use hook
     usePageTitle(t.notebooks.title);
     const [notebooks, setNotebooks] = useState<Notebook[]>([]);
+    const [loadError, setLoadError] = useState(false);
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -32,7 +33,9 @@ export default function NotebooksPage() {
         try {
             const data = await apiClient.get<Notebook[]>("/api/notebooks");
             setNotebooks(data);
+            setLoadError(false);
         } catch (error) {
+            setLoadError(true);
             frontendLogger.error('[Notebooks]', 'Failed to fetch notebooks', { error });
         } finally {
             setLoading(false);
@@ -79,7 +82,18 @@ export default function NotebooksPage() {
 
                 <ShortIdLocator />
 
-                {notebooks.length === 0 ? (
+                {loadError && notebooks.length === 0 ? (
+                    <EmptyState
+                        icon={BookOpen}
+                        title={t.notebooks?.loadError || "Could not load your notebooks"}
+                        description={t.notebooks?.loadErrorHint}
+                        action={
+                            <Button onClick={() => { setLoading(true); fetchNotebooks(); }}>
+                                {t.notebooks?.retryLoad || "Retry"}
+                            </Button>
+                        }
+                    />
+                ) : notebooks.length === 0 ? (
                     <EmptyState
                         icon={BookOpen}
                         title={t.notebooks?.empty || "No notebooks yet."}

@@ -354,6 +354,9 @@ export const translations = {
             detailedAnalysis: "Detailed Analysis",
             referenceDiagram: "Reference Diagram",
             invalidRequest: "Invalid Request",
+            nextQuestion: "Next Question",
+            noNextQuestion: "No more due questions",
+            backToReview: "Back to Review",
             errors: {
                 connection: "Network error. Please check your connection and try again.",
                 response: "AI response error. Please try again or switch to a different model.",
@@ -1737,6 +1740,9 @@ export const translations = {
             detailedAnalysis: "详细解析",
             referenceDiagram: "参考图形",
             invalidRequest: "无效请求",
+            nextQuestion: "下一题",
+            noNextQuestion: "没有下一题了",
+            backToReview: "返回复习页",
             errors: {
                 connection: "网络连接失败，请检查网络设置或代理配置。",
                 response: "AI 解析异常，请重试或切换其他模型。",

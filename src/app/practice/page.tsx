@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +17,7 @@ import { PracticeFeedback } from "@/components/practice/practice-feedback";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePageTitle } from "@/lib/page-title";
 import { usePracticeSession } from "@/lib/use-practice-session";
+import { useNextDueQuestion } from "@/lib/use-next-due";
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +29,8 @@ function PracticeContent() {
     usePageTitle(t.practice.title);
     const session = usePracticeSession(errorItemId);
     const { question, loading } = session;
+    // 判分完成后才计算下一道到期错题（判分中不提前显示）
+    const nextDue = useNextDueQuestion(errorItemId, session.isSubmitted && session.showAnswer && !session.grading);
 
     if (!errorItemId) {
         return <div className="p-8 text-center">{t.practice.invalidRequest || "Invalid Request"}</div>;
@@ -154,10 +158,34 @@ function PracticeContent() {
                             </Card>
                         </div>
                     )}
+
+                    {session.isSubmitted && session.showAnswer && !session.grading && nextDue.resolved && (
+                        <div className="flex flex-col items-center gap-3 pt-2">
+                            {nextDue.nextId ? (
+                                <Button size="lg" className="w-full sm:w-auto" onClick={() => router.push(`/practice?id=${nextDue.nextId}`)}>
+                                    {t.practice.nextQuestion || "Next Question"}
+                                    <ArrowRight className="ml-2 h-5 w-5" />
+                                </Button>
+                            ) : (
+                                <>
+                                    <p className="text-muted-foreground">{t.practice.noNextQuestion || "No more due questions"}</p>
+                                    <Button variant="outline" asChild>
+                                        <Link href="/review">{t.practice.backToReview || "Back to Review"}</Link>
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
     );
+}
+
+/** 按错题 id 给练习内容设置 key：跳到下一题时整体重挂载，重置练习会话状态 */
+function KeyedPracticeContent() {
+    const searchParams = useSearchParams();
+    return <PracticeContent key={searchParams.get("id") ?? ""} />;
 }
 
 export default function PracticePage() {
@@ -168,7 +196,7 @@ export default function PracticePage() {
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
             }>
-                <PracticeContent />
+                <KeyedPracticeContent />
             </Suspense>
         </main>
     );

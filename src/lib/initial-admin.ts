@@ -1,14 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
+import { accountNameSchema } from "@/lib/account-name";
 
 /**
- * 安装程序预先设置的管理员（如飞牛OS 安装向导中填写的邮箱和密码）：
- * 安装脚本把邮箱和 bcrypt 密码哈希写入配置目录的 initial-admin.json（不含明文密码），
+ * 安装程序预先设置的管理员（如飞牛OS 安装向导中填写的账号和密码）：
+ * 安装脚本把账号和 bcrypt 密码哈希写入配置目录的 initial-admin.json（不含明文密码），
  * 服务首次启动时据此创建管理员并删除该文件，不再需要初始化链接
  */
 const initialAdminSchema = z.object({
-    email: z.string().trim().regex(/^[^\s@]+@[^\s@]+$/),
+    email: accountNameSchema,
     name: z.string().trim().min(1).max(50).optional(),
     // bcrypt 哈希，如 $2a$12$…
     passwordHash: z.string().regex(/^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/),

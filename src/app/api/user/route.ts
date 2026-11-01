@@ -13,6 +13,7 @@ import { MAX_MASTERY_THRESHOLD, MIN_MASTERY_THRESHOLD } from "@/lib/mastery-stat
 import { THEME_PREFERENCES } from "@/lib/theme";
 import { GRADE_RECOGNITION_MODES } from "@/lib/question-grade";
 import { GRADE_SEMESTERS } from "@/lib/grade-options";
+import { isValidAccountName } from "@/lib/account-name";
 
 const logger = createLogger('api:user');
 
@@ -112,12 +113,10 @@ export async function PATCH(req: Request) {
             updateData.masteryThreshold = masteryThreshold;
         }
 
-        // 验证邮箱格式（如果提供了邮箱）
-        // 支持标准邮箱和本地邮箱（如 admin@localhost）
+        // 验证账号名格式（如果提供了新账号名）：2-64 个字符、不含空白，兼容历史邮箱形式
         if (email && email.trim()) {
-            const emailRegex = /^[^\s@]+@[^\s@]+$/;
-            if (!emailRegex.test(email.trim())) {
-                return badRequest("Invalid email format");
+            if (!isValidAccountName(email)) {
+                return badRequest("Invalid account name");
             }
             updateData.email = email.trim();
         }

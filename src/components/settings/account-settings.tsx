@@ -29,7 +29,7 @@ interface ProfileFormState {
 
 const EMPTY_PROFILE: ProfileFormState = { name: "", email: "", educationStage: "", enrollmentYear: "", currentGrade: "", currentSemester: "", password: "" };
 
-/** 账户设置：姓名、邮箱、学段、当前年级学期、入学年份和修改密码 */
+/** 账户设置：姓名、账号、学段、当前年级学期、入学年份和修改密码 */
 export function AccountSettings() {
     const { t } = useLanguage();
     const [profile, setProfile] = useState<ProfileFormState>(EMPTY_PROFILE);
@@ -126,7 +126,7 @@ export function AccountSettings() {
                     <Input
                         value={profile.email || ""}
                         onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                        type="email"
+                        type="text"
                     />
                 </div>
             </div>

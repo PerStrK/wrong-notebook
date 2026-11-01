@@ -82,7 +82,7 @@ export function InitializeForm({ token, onAlreadyInitialized }: InitializeFormPr
             </div>
             <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">{t.auth.email}</label>
-                <Input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Input id="email" type="text" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">{t.auth.password}</label>

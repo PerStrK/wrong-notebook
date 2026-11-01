@@ -76,7 +76,7 @@ export default function RegisterPage() {
             router.push("/login");
         } catch (error) {
             let errorMsg = getApiErrorMessage(error);
-            if (errorMsg === 'User with this email already exists') {
+            if (errorMsg === 'User with this account already exists') {
                 errorMsg = t.auth?.register?.emailExists || errorMsg;
             } else if (errorMsg === 'Too many requests') {
                 errorMsg = t.auth?.register?.tooManyAttempts || errorMsg;
@@ -156,7 +156,7 @@ export default function RegisterPage() {
                             <Input
                                 id="email"
                                 name="email"
-                                type="email"
+                                type="text"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required

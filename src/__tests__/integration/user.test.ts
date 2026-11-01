@@ -380,10 +380,10 @@ describe('/api/user', () => {
             expect(response.status).toBe(200);
         });
 
-        it('应该拒绝无效邮箱格式', async () => {
+        it('应该拒绝无效账号格式', async () => {
             const request = new Request('http://localhost/api/user', {
                 method: 'PATCH',
-                body: JSON.stringify({ email: 'invalid-email' }),
+                body: JSON.stringify({ email: 'has space' }),
                 headers: { 'Content-Type': 'application/json' },
             });
 
@@ -391,7 +391,7 @@ describe('/api/user', () => {
             const data = await response.json();
 
             expect(response.status).toBe(400);
-            expect(data.message).toBe('Invalid email format');
+            expect(data.message).toBe('Invalid account name');
         });
     });
 

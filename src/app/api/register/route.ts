@@ -5,10 +5,11 @@ import { z } from "zod"
 import { tooManyRequests } from "@/lib/api-errors"
 import { getAppConfig } from "@/lib/config"
 import { getClientIp, registerIpLimiter } from "@/lib/rate-limit"
+import { accountNameSchema } from "@/lib/account-name"
 
 const userSchema = z.object({
-    // 支持标准邮箱和本地邮箱（如 user@localhost）
-    email: z.string().regex(/^[^\s@]+@[^\s@]+$/, "Invalid email format"),
+    // 账号名：2-64 个字符、不含空白；兼容历史邮箱形式的账号
+    email: accountNameSchema,
     password: z.string().min(6),
     name: z.string().min(1),
     educationStage: z.string().optional(),
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
 
         if (existingUser) {
             return NextResponse.json(
-                { user: null, message: "User with this email already exists" },
+                { user: null, message: "User with this account already exists" },
                 { status: 409 }
             )
         }

@@ -7,14 +7,15 @@ import { DEFAULT_ADMIN_PASSWORD } from "@/lib/default-admin";
 import { isInitialized } from "@/lib/initialization";
 import { createLogger } from "@/lib/logger";
 import { getClientIp, registerIpLimiter } from "@/lib/rate-limit";
+import { accountNameSchema } from "@/lib/account-name";
 import { claimSetupToken } from "@/lib/setup-token";
 
 const logger = createLogger("api:initialize");
 
 const initializeSchema = z.object({
     token: z.string().min(1),
-    // 与注册一致，支持本地邮箱（如 admin@localhost）
-    email: z.string().trim().regex(/^[^\s@]+@[^\s@]+$/),
+    // 与注册一致：账号名规则（2-64 个字符、不含空白）
+    email: accountNameSchema,
     name: z.string().trim().min(1).max(50),
     password: z.string().min(6).refine((value) => value !== DEFAULT_ADMIN_PASSWORD),
 });

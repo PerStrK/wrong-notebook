@@ -8,13 +8,13 @@
 
 [![GitHub downloads](https://img.shields.io/github/downloads/margrop/wrong-notebook/total?label=downloads&logo=github)](https://github.com/margrop/wrong-notebook/releases) [![npm downloads](https://img.shields.io/npm/d18m/wrong-notebook?label=npm%20downloads&logo=npm)](https://www.npmjs.com/package/wrong-notebook) [![GitHub stars](https://img.shields.io/github/stars/margrop/wrong-notebook?logo=github)](https://github.com/margrop/wrong-notebook/stargazers) [![GitHub forks](https://img.shields.io/github/forks/margrop/wrong-notebook?logo=github)](https://github.com/margrop/wrong-notebook/forks)
 
-[![Desktop](https://img.shields.io/badge/Desktop-Windows%20%7C%20macOS%20%7C%20Linux-informational)](https://github.com/margrop/wrong-notebook/releases) [![Android](https://img.shields.io/badge/Android-34A853?logo=android&logoColor=white)](https://github.com/margrop/wrong-notebook/releases) [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://github.com/margrop/wrong-notebook/pkgs/container/wrong-notebook) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/wrong-notebook) [![fnOS](https://img.shields.io/badge/fnOS-fpk-0A84FF)](https://github.com/margrop/wrong-notebook/releases) [![Web](https://img.shields.io/badge/Web-PC%20%7C%20Mobile-orange)](https://wrong-notebook-demo.vercel.app)
+[![Desktop](https://img.shields.io/badge/Desktop-Windows%20%7C%20macOS%20%7C%20Linux-informational)](https://github.com/margrop/wrong-notebook/releases) [![Android](https://img.shields.io/badge/Android-34A853?logo=android&logoColor=white)](https://github.com/margrop/wrong-notebook/releases) [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://github.com/margrop/wrong-notebook/pkgs/container/wrong-notebook) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/wrong-notebook) [![fnOS](https://img.shields.io/badge/fnOS-fpk-0A84FF)](https://github.com/margrop/wrong-notebook/releases) [![Web](https://img.shields.io/badge/Web-PC%20%7C%20Mobile-orange)](https://wrong-notebook-demo.margrop.net)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Release](https://img.shields.io/github/v/release/margrop/wrong-notebook?include_prereleases)](https://github.com/margrop/wrong-notebook/releases) [![CI](https://github.com/margrop/wrong-notebook/actions/workflows/ci.yml/badge.svg)](https://github.com/margrop/wrong-notebook/actions/workflows/ci.yml) [![CodeQL](https://github.com/margrop/wrong-notebook/actions/workflows/codeql.yml/badge.svg)](https://github.com/margrop/wrong-notebook/actions/workflows/codeql.yml) [![npm](https://img.shields.io/npm/v/wrong-notebook)](https://www.npmjs.com/package/wrong-notebook)
 
 An AI-powered notebook for the questions you got wrong. Snap a photo or type a question, and AI recognizes it, solves it, tags it with knowledge points and rates its difficulty. Manage your notebooks, practice with similar questions, build printable exams and track how well you have mastered each question.
 
-**⬇️ [Download](https://blog.margrop.net/wrong-notebook-github-pages/en/download/)** · **🚀 [Live demo](https://wrong-notebook-demo.vercel.app)** (account `demo@localhost`, password `demo123456`) · **🌐 [Project website](https://blog.margrop.net/wrong-notebook-github-pages/en/)** · **📖 [Docs (Wiki)](https://github.com/margrop/wrong-notebook/wiki/Home-en)**
+**⬇️ [Download](https://wrong-notebook.margrop.net/en/download/)** · **🚀 [Live demo](https://wrong-notebook-demo.margrop.net)** (account `demo@localhost`, password `demo123456`) · **🌐 [Project website](https://wrong-notebook.margrop.net/en/)** · **📖 [Docs (Wiki)](https://github.com/margrop/wrong-notebook/wiki/Home-en)**
 
 > The demo uses a shared account and its data is visible to every visitor. Do not enter personal information. Articles: [Stop Copying Mistakes. Start Learning from Them](https://blog.margrop.net/en/post/wrong-notebook-ai-family-learning/) · [Free MiniMax Accounts, fnOS, and Daily Review](https://blog.margrop.net/en/post/wrong-notebook-minimax-free-ai-review/)
 
@@ -144,7 +144,7 @@ Practice statistics show total practice, accuracy and active months, with distri
 - **📝 Regenerate the solution**: **Regenerate full solution** on the details page asks AI to rewrite the answer and analysis (with confirmation before overwriting); knowledge points and the cause of the mistake stay unchanged.
 - **🖼️ Question figures**: during recognition AI redraws figures as SVG, which is used on the details page, in printouts and in exams. For a saved mistake with a figure, set **Figure display scale** (10–200%, default 100%) and **Figure alignment** (left / center / right, default center) on its details page; exam papers with figures also support adjusting the scale and alignment per question or uniformly across the exam. Saved settings apply to display and printouts and are restored from backups. Check the original photo with "View original image", or replace and add photos.
 - **⭐ Difficulty stars**: on import AI rates difficulty from 1 to 5 stars following the star scale of a well-known Chinese math competition textbook series (1–2 stars: textbook and school extension, 3–4: regular math olympiad, 5: hardest competition problems). You can change it manually; questions with 4 stars or more go to paper B by default.
-- **🏷️ Knowledge-point tags**: each notebook is created for a school stage (primary / junior high / senior high) and a subject (cannot be changed later). Primary school supports math, English and Chinese; the built-in Chinese chapters and knowledge points cover grades 1–6, junior high and senior high. AI picks tags from all knowledge points of that stage and subject. Custom tags are supported, and AI can re-tag the knowledge points and difficulty of one question or a whole notebook.
+- **🏷️ Knowledge-point tags**: each notebook is created for a school stage (primary / junior high / senior high) and a subject (cannot be changed later). Primary school supports math, English and Chinese; the built-in Chinese chapters and knowledge points cover grades 1–6, junior high and senior high. AI picks tags from all knowledge points of that stage and subject. Custom tags are supported, and AI can re-tag the knowledge points and difficulty of one question or a whole notebook. Admins can import the PEP curriculum tag system (mainly math, also Chinese, English, physics, history, geography and morality & law; about 2,800 knowledge points) by uploading [topics.json](https://raw.githubusercontent.com/xiaoyang111222/cn-math-taxonomy/HEAD/data/topics.json) from [cn-math-taxonomy](https://github.com/xiaoyang111222/cn-math-taxonomy) in **Settings → User Management → PEP Curriculum Knowledge Points**. Once imported, a tag system can be chosen when creating a notebook. It coexists with the built-in system and cannot be changed after creation.
 
 ### Explanations and demos
 
@@ -181,7 +181,7 @@ Ordered from easiest to most hands-on. Fresh installs have no default account: t
 
 ### Option 1: Installers (Windows / macOS / Linux / fnOS / Android / npm)
 
-Download the package for your platform from the [download page](https://blog.margrop.net/wrong-notebook-github-pages/en/download/) (detects your OS and architecture) or from [Releases](https://github.com/margrop/wrong-notebook/releases), install it and open it:
+Download the package for your platform from the [download page](https://wrong-notebook.margrop.net/en/download/) (detects your OS and architecture) or from [Releases](https://github.com/margrop/wrong-notebook/releases), install it and open it:
 
 | Platform | Package |
 | :--- | :--- |
@@ -502,9 +502,11 @@ npm run test:unit           # Unit tests
 npm run test:integration    # Integration tests
 npm test                    # All Vitest tests
 npm run test:coverage       # Test coverage (fails below the minimum thresholds)
-npm run test:e2e            # Playwright E2E (run node scripts/prepare-e2e.js first to set up test accounts)
+npm run test:e2e            # Isolated app, migrated test database and local AI mock; no real API key
 bash scripts/ci.sh          # Full CI (Node.js 22+, Python 3, includes production build)
 ```
+
+The E2E launcher copies the app and dependencies into a system temporary directory, applies migrations, creates test accounts and builds the production app. Browser tests use fixed responses from a local AI service, with separate configuration and a temporary SQLite database. Reports are printed at the end. Filter cases with `npm run test:e2e -- --grep E2E-M01`. See the [E2E design and acceptance criteria](doc/E2E_MOCK_AI_TEST_DESIGN.md).
 
 After changing `prisma/schema.prisma`, create a migration with `npx prisma migrate dev --name <name>` and commit it; migrations must be compatible with existing data. See [AGENTS.md](AGENTS.md) for more development conventions.
 
@@ -516,6 +518,7 @@ The `scripts/` directory contains maintenance and debugging scripts, for example
 - **Restore the default admin role**: `node scripts/seed-admin.js` (only restores the admin role and re-enables an existing `admin@localhost`; when no admin exists, restarting the server prints a new setup link in the log)
 - **Rebuild system knowledge points**: `npx ts-node --compiler-options '{"module":"CommonJS"}' scripts/rebuild-system-tags.ts` (keeps custom tags and question links; back up before running in production)
 - **Fill in Chinese knowledge points**: `npx ts-node --compiler-options '{"module":"CommonJS"}' scripts/seed-chinese-primary.ts` (uses the same curriculum source as the app, adds missing built-in Chinese tags and updates their curriculum order while preserving tag IDs, question links, custom tags and other tag systems; safe to repeat). Docker and installation packages run the compiled `dist-scripts/scripts/seed-chinese-primary.js` at startup, so existing installations do not need a full tag rebuild.
+- **Import PEP curriculum knowledge points**: the command-line equivalent of **Settings → User Management → PEP Curriculum Knowledge Points**. Download [topics.json](https://raw.githubusercontent.com/xiaoyang111222/cn-math-taxonomy/HEAD/data/topics.json) to `scripts/data/cn-math-taxonomy-topics.json`, then run `npx tsx scripts/seed-cnm-tags.ts` (or pass the file path as an argument; imported incrementally as a separate `cnm` tag system without touching the built-in system or existing questions; safe to repeat).
 - **Inspect the database**: `node scripts/check-db-users.js`, `node scripts/check-db-data.js`
 
 ### Documentation

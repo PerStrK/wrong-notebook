@@ -8,13 +8,13 @@
 
 [![GitHub downloads](https://img.shields.io/github/downloads/margrop/wrong-notebook/total?label=downloads&logo=github)](https://github.com/margrop/wrong-notebook/releases) [![npm downloads](https://img.shields.io/npm/d18m/wrong-notebook?label=npm%20downloads&logo=npm)](https://www.npmjs.com/package/wrong-notebook) [![GitHub stars](https://img.shields.io/github/stars/margrop/wrong-notebook?logo=github)](https://github.com/margrop/wrong-notebook/stargazers) [![GitHub forks](https://img.shields.io/github/forks/margrop/wrong-notebook?logo=github)](https://github.com/margrop/wrong-notebook/forks)
 
-[![桌面版](https://img.shields.io/badge/%E6%A1%8C%E9%9D%A2%E7%89%88-Windows%20%7C%20macOS%20%7C%20Linux-informational)](https://github.com/margrop/wrong-notebook/releases) [![Android](https://img.shields.io/badge/Android-34A853?logo=android&logoColor=white)](https://github.com/margrop/wrong-notebook/releases) [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://github.com/margrop/wrong-notebook/pkgs/container/wrong-notebook) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/wrong-notebook) [![飞牛OS](https://img.shields.io/badge/%E9%A3%9E%E7%89%9BOS-fpk-0A84FF)](https://github.com/margrop/wrong-notebook/releases) [![Web](https://img.shields.io/badge/Web-PC%20%7C%20Mobile-orange)](https://wrong-notebook-demo.vercel.app)
+[![桌面版](https://img.shields.io/badge/%E6%A1%8C%E9%9D%A2%E7%89%88-Windows%20%7C%20macOS%20%7C%20Linux-informational)](https://github.com/margrop/wrong-notebook/releases) [![Android](https://img.shields.io/badge/Android-34A853?logo=android&logoColor=white)](https://github.com/margrop/wrong-notebook/releases) [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://github.com/margrop/wrong-notebook/pkgs/container/wrong-notebook) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/wrong-notebook) [![飞牛OS](https://img.shields.io/badge/%E9%A3%9E%E7%89%9BOS-fpk-0A84FF)](https://github.com/margrop/wrong-notebook/releases) [![Web](https://img.shields.io/badge/Web-PC%20%7C%20Mobile-orange)](https://wrong-notebook-demo.margrop.net)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Release](https://img.shields.io/github/v/release/margrop/wrong-notebook?include_prereleases)](https://github.com/margrop/wrong-notebook/releases) [![CI](https://github.com/margrop/wrong-notebook/actions/workflows/ci.yml/badge.svg)](https://github.com/margrop/wrong-notebook/actions/workflows/ci.yml) [![CodeQL](https://github.com/margrop/wrong-notebook/actions/workflows/codeql.yml/badge.svg)](https://github.com/margrop/wrong-notebook/actions/workflows/codeql.yml) [![npm](https://img.shields.io/npm/v/wrong-notebook)](https://www.npmjs.com/package/wrong-notebook)
 
 一个基于 AI 的智能错题管理系统：拍照或输入题目后，由 AI 识别、解答、打知识点标签并评定难度，支持错题本管理、举一反三练习、组卷打印和掌握程度跟踪。
 
-**⬇️ [下载安装包](https://blog.margrop.net/wrong-notebook-github-pages/download/)** · **🚀 [在线演示](https://wrong-notebook-demo.vercel.app)**（账号 `demo@localhost`，密码 `demo123456`） · **🌐 [项目介绍页](https://blog.margrop.net/wrong-notebook-github-pages/)** · **📖 [使用文档（Wiki）](https://github.com/margrop/wrong-notebook/wiki)**
+**⬇️ [下载安装包](https://wrong-notebook.margrop.net/download/)** · **🚀 [在线演示](https://wrong-notebook-demo.margrop.net)**（账号 `demo@localhost`，密码 `demo123456`） · **🌐 [项目介绍页](https://wrong-notebook.margrop.net/)** · **📖 [使用文档（Wiki）](https://github.com/margrop/wrong-notebook/wiki)**
 
 > 演示站点为共享账号，数据对所有访客可见，请勿录入个人信息。介绍文章：[别让错题本变成抄题本：我给孩子用的 AI 错题本开源了](https://blog.margrop.net/post/wrong-notebook-ai-family-learning/) · [不用先配 API Key：接上 MiniMax 免费账号](https://blog.margrop.net/post/wrong-notebook-minimax-free-ai-review/)
 
@@ -144,7 +144,7 @@
 - **📝 重新生成解答**：详情页「重新生成完整解答」由 AI 重新生成答案和解析（覆盖前二次确认），知识点和错因保持不变。
 - **🖼️ 题目配图**：识别时由 AI 用 SVG 重绘题目配图，详情页、打印和试卷都使用 SVG 配图；有配图的错题可在详情页设置「配图显示比例」（10%～200%，默认 100%）与「配图显示位置」（居左/居中/居右，默认居中），含配图的试卷也支持按题逐个调整或全卷统一调整配图比例与显示位置，保存后同步用于显示和打印，并随备份恢复。拍照原图可在「查看原题图片」中核对，也可替换或补充上传。
 - **⭐ 难度星级**：导入时由 AI 参考《高思学校竞赛数学导引》的星级标准评定 1~5 星（一二星为课本及校内拔高，三四星为常规奥数，五星为竞赛压轴），可手动修改；4 星及以上默认归入 B 卷。
-- **🏷️ 知识点标签**：错题本创建时选择学段（小学/初中/高中）和学科（创建后不可修改），小学支持数学、英语和语文；内置语文章节与知识点覆盖小学一年级至六年级及初高中。本错题本内的题目由 AI 从该学段、该学科的全部知识点中选择标签；支持自定义标签，单题或整本错题本可让 AI 重新识别知识点和难度。
+- **🏷️ 知识点标签**：错题本创建时选择学段（小学/初中/高中）和学科（创建后不可修改），小学支持数学、英语和语文；内置语文章节与知识点覆盖小学一年级至六年级及初高中。本错题本内的题目由 AI 从该学段、该学科的全部知识点中选择标签；支持自定义标签，单题或整本错题本可让 AI 重新识别知识点和难度。管理员可在「设置 → 用户管理 → 人教版课标知识点」上传 [cn-math-taxonomy](https://github.com/xiaoyang111222/cn-math-taxonomy) 的 [topics.json](https://raw.githubusercontent.com/xiaoyang111222/cn-math-taxonomy/HEAD/data/topics.json)，导入「人教版课标体系」（以数学为主，也包含语文、英语、物理、历史、地理、道德与法治，约 2800 个知识点）；导入后创建错题本时可选择标签体系，与内置体系并存，创建后不可更改。
 
 ### 讲解与演示
 
@@ -181,7 +181,7 @@
 
 ### 方式一：安装包（Windows / macOS / Linux / 飞牛OS / 安卓 / npm）
 
-从[下载页](https://blog.margrop.net/wrong-notebook-github-pages/download/)（自动识别系统与架构）或 [Releases](https://github.com/margrop/wrong-notebook/releases) 下载对应安装包，安装后直接打开：
+从[下载页](https://wrong-notebook.margrop.net/download/)（自动识别系统与架构）或 [Releases](https://github.com/margrop/wrong-notebook/releases) 下载对应安装包，安装后直接打开：
 
 | 平台 | 安装包 |
 | :--- | :--- |
@@ -500,9 +500,11 @@ npm run test:unit           # 单元测试
 npm run test:integration    # 集成测试
 npm test                    # 全部 Vitest 测试
 npm run test:coverage       # 测试覆盖率（低于最低要求时失败）
-npm run test:e2e            # Playwright E2E（先运行 node scripts/prepare-e2e.js 准备测试账号）
+npm run test:e2e            # 隔离应用、正式迁移测试库与本地模型服务，无需真实 API Key
 bash scripts/ci.sh          # 完整 CI（Node.js 22+、Python 3，含生产构建）
 ```
+
+E2E 启动器会在系统临时目录复制应用和依赖、执行正式迁移、生成测试账号并完成生产构建，随后使用本地固定模型响应运行浏览器用例。不会读取现有应用配置、复用开发服务器或访问外部模型。报告路径在命令结束时输出；可用 `npm run test:e2e -- --grep E2E-M01` 筛选用例。用例与运行边界见 [E2E 设计与验收](doc/E2E_MOCK_AI_TEST_DESIGN.md)。
 
 修改 `prisma/schema.prisma` 后使用 `npx prisma migrate dev --name <名称>` 生成正式迁移并提交；迁移须兼容已有数据。更多开发约定见 [AGENTS.md](AGENTS.md)。
 
@@ -514,6 +516,7 @@ bash scripts/ci.sh          # 完整 CI（Node.js 22+、Python 3，含生产构�
 - **恢复默认管理员角色**：`node scripts/seed-admin.js`（只为已有的 `admin@localhost` 恢复管理员角色并启用；没有任何管理员时，重启服务会在日志中打印新的初始化链接）
 - **重建系统知识点**：`npx ts-node --compiler-options '{"module":"CommonJS"}' scripts/rebuild-system-tags.ts`（保留自定义标签和题目关联；生产环境操作前请先备份）
 - **补齐语文知识点**：`npx ts-node --compiler-options '{"module":"CommonJS"}' scripts/seed-chinese-primary.ts`（与主课程数据共用来源，只增量补齐内置语文体系及更新课程排序，保留标签 ID、题目关联、自定义标签和其他体系；可重复执行）。Docker 和安装包启动时自动执行编译后的 `dist-scripts/scripts/seed-chinese-primary.js`，旧安装无需重建全部标签。
+- **导入人教版课标知识点**：与「设置 → 用户管理 → 人教版课标知识点」相同的命令行方式。先下载 [topics.json](https://raw.githubusercontent.com/xiaoyang111222/cn-math-taxonomy/HEAD/data/topics.json) 到 `scripts/data/cn-math-taxonomy-topics.json`，再执行 `npx tsx scripts/seed-cnm-tags.ts`（也可把文件路径作为参数传入；作为独立的 `cnm` 标签体系增量导入，不影响内置体系和已有题目，可重复执行）。
 - **检查数据库**：`node scripts/check-db-users.js`、`node scripts/check-db-data.js`
 
 ### 文档

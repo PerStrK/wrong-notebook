@@ -1,6 +1,8 @@
 /**
  * 界面主题：默认跟随系统，可手动切换浅色/深色；偏好缓存在本地并保存到账号
  */
+import fs from 'node:fs';
+import path from 'node:path';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
@@ -100,6 +102,17 @@ describe('主题工具函数', () => {
         expect(resolveTheme('dark', false)).toBe('dark');
     });
 
+    it('本地缓存中的代码片段不会作为首屏脚本执行', () => {
+        const injected = vi.fn();
+        vi.stubGlobal('themeInitAttack', injected);
+        localStorage.setItem(THEME_STORAGE_KEY, 'dark");themeInitAttack();//</script><script>themeInitAttack()</script>');
+        systemDark = true;
+        new Function(THEME_INIT_SCRIPT)();
+        expect(injected).not.toHaveBeenCalled();
+        expect(htmlIsDark()).toBe(true);
+        expect(document.documentElement.style.colorScheme).toBe('dark');
+    });
+
     it('首屏脚本按本地缓存的偏好设置 dark 类，没有缓存时跟随系统', () => {
         const run = () => new Function(THEME_INIT_SCRIPT)();
 
@@ -163,5 +176,31 @@ describe('ThemeProvider', () => {
         await render();
 
         expect(probe().dataset.preference).toBe('dark');
+    });
+
+    it('深色模式下打印时切换为浅色并在打印结束后恢复', async () => {
+        systemDark = true;
+        await render();
+        expect(htmlIsDark()).toBe(true);
+        expect(document.documentElement.style.colorScheme).toBe('dark');
+
+        act(() => {
+            window.dispatchEvent(new Event('beforeprint'));
+        });
+        expect(htmlIsDark()).toBe(false);
+        expect(document.documentElement.style.colorScheme).toBe('light');
+
+        act(() => {
+            window.dispatchEvent(new Event('afterprint'));
+        });
+        expect(htmlIsDark()).toBe(true);
+        expect(document.documentElement.style.colorScheme).toBe('dark');
+    });
+
+    it('全局样式将深色主题限定在屏幕媒体并在打印时强制白底深字', () => {
+        const css = fs.readFileSync(path.join(process.cwd(), 'src/app/globals.css'), 'utf8');
+        expect(css).toContain(':root,\n.exam-sheet');
+        expect(css).toMatch(/@media screen\s*\{\s*\.dark\s*\{/);
+        expect(css).toMatch(/@media print\s*\{[\s\S]*?:root,\s*\.dark\s*\{[\s\S]*?color-scheme:\s*light\s*!important/);
     });
 });
